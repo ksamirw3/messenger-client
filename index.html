@@ -1,0 +1,73 @@
+<html>
+  <head>
+    <title>Messenger</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+  <body>
+    
+    <div class="container" ng-app="mgr">
+        <div class='rows' ng-controller="chatCtrl" ng-show="me">
+        
+        <div class="col-xs-4">
+          <ul class="user">
+            <!-- appending username  -->
+            <li class="" ng-repeat="user in users_list" ng-style="{
+                          'background': selected_user.id==user.id ?  '#d2d2d2' :'#e2e2e2',
+                          'cursor': me.id==user.id ?  'not-allowed' :'pointer'
+                      }" ng-click="clicked_highlight(user.id)">
+                          <span id='{{user.id}}'>
+                        {{ user.user_name }} 
+                        <online ng-show="user.socket" title="Online" /> 
+                </span>
+                
+                <span class='you' ng-style="{
+                          'display': me.id==user_list.id ? 'block' :'none' 
+                      }">You</span>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="col-xs-8">
+          <!-- showing messages -->
+          <div class="chatbox" id="chatbox">
+              
+              <div ng-repeat="msg in msgs">
+                <span class='sender_msg'>
+                    {{ msg.from.user_name }} : {{ msg.msg }}</span>
+              </div>
+          </div>
+          <br/>
+          <div id="name-group" class="form-group">
+            <textarea class="form-control msg_box" id="msg_box" ng-model='msg_text' ng-keypress="send_msg($event)" placeholder="Type here and check the Title in Tab"></textarea>
+            <input type='text' style='display:none' ng-model='selected_id' />
+          </div>
+        </div>
+
+      </div>   
+        
+        
+        <div class='rows' ng-controller="loginCtrl" ng-hide="me">
+                <form action="" class="login-page" name="login" novalidate>
+            <div >
+                <label for="">Username:</label>
+                <input type="text" class="form-control" ng-model="user.username" required>
+            </div>
+            <div class="input-full">
+                <label for="">Password:</label>
+                <input type="password" class="form-control" ng-model="user.password" required/>    
+            </div>
+            <div class="input-full">
+                <input type="button" value="Login" class="btn btn-primary pull-right" ng-click="doLogin()">
+            </div>
+
+
+        </form>
+            </div>
+    </div>
+
+  </body> 
+  <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+  <script src="js/angular.min.js"></script>
+  <script src="js/script.js"></script>
+</html>
