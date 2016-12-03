@@ -2,7 +2,9 @@
 
 -- Manual install using apache web server
 
-git clone git@github.com:ksamirw3/messanger-server.git inside WWW folder
+git clone git@github.com:ksamirw3/messanger-server.git
+
+move files to www
 
 run apache web server
 
