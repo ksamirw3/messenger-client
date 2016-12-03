@@ -8,7 +8,17 @@ move files to www
 
 run apache web server
 
-open browser and type the following to make sure server is running
+open browser and type the following
 
 http://localhost/messenger-client/
+
+can use the following username/password to login
+
+user1/123456
+
+user2/123456
+
+user3/123456
+
+user3/123456
 
