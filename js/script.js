@@ -5,6 +5,38 @@ app.value('appSettings', {
     version: '1.0'
 });
 
+app.config(function ($httpProvider) {
+
+    $httpProvider.interceptors.push(['$q', '$injector', '$rootScope',function ($q, $injector, $rootScope) {
+        return {
+            'request': function (config) {
+                // set header token
+                config.headers = config.headers || {};
+                    var service = $injector.get('service');
+                    var token = service.getToken();
+                    
+//                    console.log('token:', token);
+                    if(token){
+                        config.headers['Authorization'] = 'Bearer '+token;
+                    }
+                
+                return config || $q.when(config);
+            },
+            'response': function (response) {
+                return response || $q.when(response);
+            },
+            'responseError': function (response) {
+                    if (response.status === 401 || response.status === 403) {
+                        $rootScope.$broadcast('userLoggedOut', {});
+                    var helper = $injector.get('helper');
+                    helper.setMessage('Invalid Access Token');
+                    }
+                    return $q.reject(response);
+                }
+        };
+    }]);
+});
+
 // chat controller
 (function () {
     var controller = function ($scope, service) {
@@ -13,26 +45,29 @@ app.value('appSettings', {
         $scope.selected_user = null;
         $scope.users_list = null;
 
-        service.getUsers().then(function (response) {
-            var res = response.data;
-            if (res.error) {
-                console.log(res.error);
-                return false;
-            }
-            $scope.users_list = res
-        });
-
         var socket = io.connect('http://localhost:3000');
         $scope.msgs = [];
 
 
-
         $scope.$on('userLogged', function (event, data) {
 //                console.log('userLogged', data);
+            service.getUsers().then(function (response) {
+                var res = response.data;
+                if (res.error) {
+                    console.log(res.error);
+                    return false;
+                }
+                $scope.users_list = res
+            });
+
             $scope.me = data;
             socket.emit('userLogin', data.id);
         });
-
+        
+        $scope.$on('userLoggedOut', function (event, data) {
+            $scope.me = null;
+        });
+        
         socket.on('userConnected', function (user) {
 //            if ($scope.me == null) {
 //                $scope.me = user;
@@ -141,6 +176,10 @@ app.value('appSettings', {
                     return false;
                 }
                 service.setUser(res.data);
+                
+                if(res.token)
+                    service.setToken(res.token);
+                
                 $rootScope.$broadcast('userLogged', res.data);
 //                console.log('doLogin', service.getUser());
 
@@ -150,6 +189,10 @@ app.value('appSettings', {
 
         $scope.$on('userLogged', function (event, data) {
             $scope.me = data;
+        });
+        
+        $scope.$on('userLoggedOut', function (event, data) {
+            $scope.me = null;
         });
 
     };
@@ -163,6 +206,7 @@ app.value('appSettings', {
 
         var service = {
             user: null,
+            token: null
         }
 
         var response = {
@@ -177,6 +221,12 @@ app.value('appSettings', {
             },
             getUser: function () {
                 return service.user;
+            },
+            setToken: function (val) {
+                service.token = val;
+            },
+            getToken: function () {
+                return service.token;
             }
         };
 
